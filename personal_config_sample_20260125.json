@@ -1,0 +1,173 @@
+{
+    "current_ship_id": "58915099",
+    "loc_map": {
+        "A": "Seraphim Station",
+        "B": "Orison",
+        "C": "Grim HEX",
+        "D": "Area18",
+        "E": "Baijini Point",
+        "F": "New Babbage",
+        "G": "Port Tressler",
+        "H": "Lorville",
+        "I": "Everus Harbor",
+        "J": "Pyrollis",
+        "K": "",
+        "L": "",
+        "M": "",
+        "N": "",
+        "O": "",
+        "P": "",
+        "Q": "",
+        "R": "",
+        "S": "",
+        "T": "",
+        "U": "",
+        "V": "",
+        "W": "",
+        "X": "",
+        "Y": "",
+        "Z": ""
+    },
+    "item_map": {
+        "가": "Medical Supplies",
+        "나": "Distilled Spirits",
+        "다": "Stims",
+        "라": "Processed Food",
+        "마": "Scrap",
+        "바": "RMC",
+        "사": "Gold",
+        "아": "Laranite",
+        "자": "Agricium",
+        "차": "Waste",
+        "카": "",
+        "타": "",
+        "파": "",
+        "하": ""
+    },
+    "mission_groups": [
+        {
+            "name": "💊 Seraphim Medical Run",
+            "reward": 45000,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "A",
+                    "Item": "가",
+                    "Qty": 10
+                },
+                {
+                    "Origin": "A",
+                    "Dest": "C",
+                    "Item": "나",
+                    "Qty": 5
+                }
+            ]
+        },
+        {
+            "name": "Stim Run ",
+            "reward": 56000,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "H",
+                    "Item": "다",
+                    "Qty": 10
+                },
+                {
+                    "Origin": "A",
+                    "Dest": "G",
+                    "Item": "자",
+                    "Qty": 5
+                }
+            ]
+        }
+    ],
+    "presets": [
+        {
+            "name": "💊 Seraphim Medical Run",
+            "reward": 45000,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "A",
+                    "Item": "가",
+                    "Qty": 10
+                },
+                {
+                    "Origin": "A",
+                    "Dest": "C",
+                    "Item": "나",
+                    "Qty": 5
+                }
+            ]
+        },
+        {
+            "name": "Stim Run ",
+            "reward": 56000,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "H",
+                    "Item": "다",
+                    "Qty": 10
+                },
+                {
+                    "Origin": "A",
+                    "Dest": "G",
+                    "Item": "자",
+                    "Qty": 5
+                }
+            ]
+        }
+    ],
+    "my_fleet": [
+        {
+            "id": "s_001",
+            "man": "Drake Interplanetary",
+            "model": "Cutlass Black",
+            "capa": 46,
+            "max_box": 16,
+            "role": "Medium Freight",
+            "size": "Medium",
+            "pledge": "$110.00",
+            "auec": "2,117,400 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=drak_cutlass_black"
+        },
+        {
+            "id": "8e1d12ed",
+            "man": "Crusader",
+            "model": "Mercury Star Runner",
+            "capa": 114,
+            "max_box": 114,
+            "role": "Medium Freight",
+            "size": "Large",
+            "pledge": "$260",
+            "auec": "12,285,000 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=crus_star_runner"
+        },
+        {
+            "id": "58915099",
+            "man": "Drake",
+            "model": "Vulture",
+            "capa": 12,
+            "max_box": 12,
+            "role": "Light Salvage",
+            "size": "Small",
+            "pledge": "$175",
+            "auec": "2,513,700 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=drak_vulture"
+        },
+        {
+            "id": "d0893a65",
+            "man": "Drake",
+            "model": "Golem",
+            "capa": 32,
+            "max_box": 32,
+            "role": "Starter / Light Mining",
+            "size": "Small",
+            "pledge": "$60",
+            "auec": "1,005,480 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=drak_golem"
+        }
+    ]
+}
