@@ -1,0 +1,254 @@
+{
+    "current_ship_id": "d1ce56ff",
+    "loc_map": {
+        "A": "Cru L5",
+        "B": "Area 18 (라이커 메모리얼 SP)",
+        "C": "로어빌(Teasa SP)",
+        "D": "Arc L1",
+        "E": "오리슨(어거스턴 던로우 SP)",
+        "F": "Arc L3",
+        "G": "마이크로텍(NB INT. SP)",
+        "H": "Hus L4",
+        "I": "에버러스 하버",
+        "J": "레브스키",
+        "K": "Arc L4",
+        "L": "세라핌",
+        "M": "그림 헥스",
+        "N": "Mic L2",
+        "O": "Hus L3"
+    },
+    "item_map": {
+        "가": "의약 용품",
+        "나": "몰리나 곰팡이 치료제",
+        "다": "환기 필터",
+        "라": "",
+        "마": "",
+        "바": "",
+        "사": "",
+        "아": "",
+        "자": "",
+        "차": ""
+    },
+    "mission_groups": [
+        {
+            "name": "💊 Seraphim Medical Run",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "F",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "💊 Seraphim Stims Run",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "M",
+                    "Dest": "N",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 의료용품 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "C",
+                    "Dest": "O",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 의료용품 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "A",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 치료제 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "E",
+                    "Item": "나",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 치료제 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "L",
+                    "Item": "나",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 행성계간 화물 소량 운송(필터) 83K",
+            "reward": 83500,
+            "tasks": [
+                {
+                    "Origin": "C",
+                    "Dest": "J",
+                    "Item": "다",
+                    "Qty": 8
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 치료제 화물 운송 - 소규모 83K",
+            "reward": 83500,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "J",
+                    "Item": "나",
+                    "Qty": 8
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 행성계간 화물 소량 운송(의료품) 74K",
+            "reward": 74250,
+            "tasks": [
+                {
+                    "Origin": "I",
+                    "Dest": "J",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        }
+    ],
+    "presets": [
+        {
+            "name": "연합 구호: 의료용품 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "B",
+                    "Dest": "A",
+                    "Item": "가",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 치료제 화물 운송 - 소규모 40K",
+            "reward": 40750,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "H",
+                    "Item": "나",
+                    "Qty": 6
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 치료제 화물 운송 - 소규모 83K",
+            "reward": 83500,
+            "tasks": [
+                {
+                    "Origin": "G",
+                    "Dest": "J",
+                    "Item": "나",
+                    "Qty": 8
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 행성계간 화물 소량 운송(필터) 83K",
+            "reward": 83500,
+            "tasks": [
+                {
+                    "Origin": "C",
+                    "Dest": "J",
+                    "Item": "다",
+                    "Qty": 8
+                }
+            ]
+        },
+        {
+            "name": "연합 구호: 행성계간 화물 소량 운송(의료품) 74K",
+            "reward": 74250,
+            "tasks": [
+                {
+                    "Origin": "I",
+                    "Dest": "J",
+                    "Item": "가",
+                    "Qty": 8
+                }
+            ]
+        }
+    ],
+    "my_fleet": [
+        {
+            "id": "s_001",
+            "man": "Drake ",
+            "model": "Cutlass Black",
+            "capa": 46,
+            "max_box": 16,
+            "role": "Light Freight / Medium Fighter",
+            "size": "Medium",
+            "pledge": "$110.00",
+            "auec": "2,117,400 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=drak_cutlass_black"
+        },
+        {
+            "id": "s_002",
+            "man": "Crusader",
+            "model": "Mercury Star Runner",
+            "capa": 114,
+            "max_box": 24,
+            "role": "Medium Freight",
+            "size": "Large",
+            "pledge": "$260.00",
+            "auec": "12,285,000 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=crus_star_runner"
+        },
+        {
+            "id": "s_003",
+            "man": "Argo",
+            "model": "Raft",
+            "capa": 192,
+            "max_box": 32,
+            "role": "Medium Freight",
+            "size": "Large",
+            "pledge": "$125.00",
+            "auec": "3,543,750 aUEC",
+            "url": "https://www.spviewer.eu/performance?ship=argo_raft"
+        },
+        {
+            "id": "d1ce56ff",
+            "man": "RSI",
+            "model": "Hermes",
+            "capa": 288,
+            "max_box": 288,
+            "role": "Medium Freight",
+            "size": "Large",
+            "pledge": "$220",
+            "auec": "N/A",
+            "url": "https://www.spviewer.eu/performance?ship=rsi_hermes"
+        }
+    ]
+}
