@@ -12,7 +12,7 @@ from modules.tab_add import render_tab1
 from modules.tab_manage import render_tab2
 from modules.tab_sim import render_tab3
 # 👇 [추가] 버전을 가져옵니다
-from utils.version import __version__
+from utils.version import __version__, __fixed__
 
 # --- Page Config ---
 st.set_page_config(
@@ -50,7 +50,11 @@ ITEM_CODES = list(st.session_state.item_map.keys())
 T = TRANS[st.session_state.current_lang]
 
 # --- UI Header ---
-st.title(f"🚀 {T['app_title']} {__version__}")
+st.markdown(f"""
+    # 🚀 {T['app_title']} <span style='font-size: 0.4em; color: gray; font-weight: normal;'>v{__version__} : {__fixed__}</span>
+    """, unsafe_allow_html=True)
+
+#st.title(f"🚀 {T['app_title']} {__version__}")
 st.caption(T['app_subtitle'])
 
 # --- Render Sidebar ---
