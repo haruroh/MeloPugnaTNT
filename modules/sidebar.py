@@ -2,18 +2,22 @@ import streamlit as st
 import json
 from datetime import datetime
 from utils.constants import generate_loc_code, generate_item_code
+# [NEW] Import 추가
+from utils.data_manager import get_sample_files, load_sample_file
 
 def render_sidebar(T, fleet_mgr, master_db, db_status, loc_codes, item_codes):
     st.sidebar.title(T["sidebar_title"])
     if db_status.startswith("❌"): st.sidebar.error(f"DB: {db_status}")
     else: st.sidebar.caption(f"DB: {db_status}")
     
+    # --- 1. 파일 업로드 ---
     uploaded = st.sidebar.file_uploader(T["upload_label"], type=["json"])
     if uploaded:
         file_id = f"{uploaded.name}_{uploaded.size}"
         if st.session_state.processed_file_id != file_id:
             try:
                 d = json.load(uploaded)
+                # 데이터 적용 로직 (공통 함수로 빼면 좋지만 일단 유지)
                 if "loc_map" in d: 
                     st.session_state.loc_map = d["loc_map"]
                     for k, v in d["loc_map"].items(): st.session_state[f"l_{k}"] = v
@@ -30,16 +34,48 @@ def render_sidebar(T, fleet_mgr, master_db, db_status, loc_codes, item_codes):
                         all_s = fleet_mgr.get_all_options()
                         if all_s: st.session_state.current_ship_id = all_s[0]["id"]
                 
-                # Widget State Clear
                 for k in list(st.session_state.keys()):
                     if k.startswith("gn_") or k.startswith("gr_"): del st.session_state[k]
 
                 st.session_state.processed_file_id = file_id
-                st.toast("Loaded Successfully!", icon="✅")
+                st.toast("File Loaded!", icon="✅")
                 st.rerun() 
             except Exception as e: st.sidebar.error(f"Load Failed: {e}")
 
+    # --- [NEW] 2. 샘플 데이터 로드 ---
+    sample_files = get_sample_files()
+    if sample_files:
+        with st.sidebar.expander("📂 Load Sample Data"):
+            selected_sample = st.selectbox("Select Mission", sample_files)
+            if st.button("Load Sample", use_container_width=True):
+                d = load_sample_file(selected_sample)
+                if d:
+                    # 데이터 적용 (위와 동일 로직)
+                    if "loc_map" in d: 
+                        st.session_state.loc_map = d["loc_map"]
+                        for k, v in d["loc_map"].items(): st.session_state[f"l_{k}"] = v
+                    if "item_map" in d: 
+                        st.session_state.item_map = d["item_map"]
+                        for k, v in d["item_map"].items(): st.session_state[f"i_{k}"] = v
+                    if "mission_groups" in d: st.session_state.mission_groups = d["mission_groups"]
+                    if "presets" in d: st.session_state.presets = d["presets"]
+                    if "my_fleet" in d: fleet_mgr.update_fleet_from_upload(d["my_fleet"])
+                    if "current_ship_id" in d:
+                        if fleet_mgr.get_ship_by_id(d["current_ship_id"]):
+                            st.session_state.current_ship_id = d["current_ship_id"]
+                        else:
+                            all_s = fleet_mgr.get_all_options()
+                            if all_s: st.session_state.current_ship_id = all_s[0]["id"]
+                    
+                    for k in list(st.session_state.keys()):
+                        if k.startswith("gn_") or k.startswith("gr_"): del st.session_state[k]
+                    
+                    st.toast(f"Sample '{selected_sample}' Loaded!", icon="✅")
+                    st.rerun()
+
     st.sidebar.divider()
+    
+    # --- 저장 및 설정 ---
     save_name = st.sidebar.text_input(T["save_filename_label"], value=f"haru_config_{datetime.now().strftime('%Y%m%d')}.json")
     st.sidebar.caption(T["save_path_info"])
     
@@ -102,7 +138,6 @@ def render_sidebar(T, fleet_mgr, master_db, db_status, loc_codes, item_codes):
             def clear_loc():
                 for k in st.session_state.loc_map: st.session_state.loc_map[k] = ""; st.session_state[f"l_{k}"] = ""
                 st.rerun()
-            # 👇 [수정됨] key 추가
             c1.button(T["add_loc_btn"], on_click=add_loc, use_container_width=True, key="btn_add_loc")
             c2.button(T["clear_loc_btn"], on_click=clear_loc, use_container_width=True, key="btn_clear_loc")
         with t2:
@@ -114,6 +149,5 @@ def render_sidebar(T, fleet_mgr, master_db, db_status, loc_codes, item_codes):
             def clear_item():
                 for k in st.session_state.item_map: st.session_state.item_map[k] = ""; st.session_state[f"i_{k}"] = ""
                 st.rerun()
-            # 👇 [수정됨] key 추가
             c1.button(T["add_item_btn"], on_click=add_item, use_container_width=True, key="btn_add_item")
             c2.button(T["clear_item_btn"], on_click=clear_item, use_container_width=True, key="btn_clear_item")

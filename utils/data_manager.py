@@ -3,10 +3,9 @@ import json
 import uuid
 from pathlib import Path
 
-# 경로 설정: data 폴더는 main.py가 있는 폴더의 하위에 있으므로
-# data_manager.py 위치(utils/) 기준으로 ../data 로 가야 함
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
+RUNDATA_DIR = DATA_DIR / "rundata"  # [NEW] 샘플 데이터 폴더
 MASTER_DB_FILE = DATA_DIR / "master_ship.json"
 
 @st.cache_data
@@ -24,6 +23,21 @@ def load_master_ship_db():
         except json.JSONDecodeError as e: return {}, f"❌ JSON Error: {e}"
         except Exception as e: return {}, f"❌ Error: {e}"
     return {}, "⚠️ No File"
+
+# [NEW] 샘플 데이터 목록 가져오기
+def get_sample_files():
+    if not RUNDATA_DIR.exists(): return []
+    return [f.name for f in RUNDATA_DIR.glob("*.json")]
+
+# [NEW] 샘플 데이터 읽기
+def load_sample_file(filename):
+    file_path = RUNDATA_DIR / filename
+    if file_path.exists():
+        try:
+            with open(file_path, "r", encoding="utf-8-sig") as f:
+                return json.load(f)
+        except: return None
+    return None
 
 class FleetManager:
     def __init__(self): pass
