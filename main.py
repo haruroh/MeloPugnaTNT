@@ -11,9 +11,10 @@ from modules.sidebar import render_sidebar
 from modules.tab_add import render_tab1
 from modules.tab_manage import render_tab2
 from modules.tab_sim import render_tab3
+# 👇 [추가] 버전을 가져옵니다
+from utils.version import __version__
 
 # --- Page Config ---
-__version__ = "v1.00.00"
 st.set_page_config(
     page_title=f"MeloPugna Trade & Transport {__version__} (Modular)", 
     layout="wide", 
