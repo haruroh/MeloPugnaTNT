@@ -38,7 +38,7 @@ TRANS = {
     "KR": {
         "app_title": "MeloPugna Trade & Transport", "app_subtitle": "스타시티즌 무역 및 화물 운송 최적화 솔루션",
         "sidebar_title": "⚙️ 설정 및 함선", "upload_label": "📂 설정 불러오기", "download_label": "💾 설정 저장하기",
-        "lang_select": "언어", "ship_select": "운용 함선 선택", "map_expander": "🗺️ 이름 및 상품 매핑", 
+        "lang_select": "Language", "ship_select": "운용 함선 선택", "map_expander": "🗺️ 이름 및 상품 매핑", 
         "ship_add_expander": "🚀 함선 추가 (마스터 DB 검색)", "ship_search_label": "함선 모델명 검색", 
         "ship_add_btn": "내 함선 목록에 추가", "ship_del_btn": "현재 함선 삭제",
         "hud_label": "현재 운용 함선",
@@ -53,7 +53,9 @@ TRANS = {
         "name_label": "계약 이름", "name_placeholder": "예: 약품런", "warn_no_task": "목표가 없습니다.", "success_commit": "등록됨!",
         "grp_manage": "계약 목록", "grp_del": "삭제", "edit_name": "이름 수정", "edit_reward": "보상금 수정",
         "save_btn": "💾 프리셋으로 저장", "clear_btn": "초기화", "calc_btn": "🔍 경로 탐색", "sim_header": "탐색 결과",
-        "select_route": "경로 선택", "return_start": "왕복", "start_loc": "시작 위치",
+        # 👇 [수정됨] 숫자 포맷({}) 추가
+        "select_route": "🚩 경로 선택 (총 {}가지 경로 탐색 완료)",
+        "return_start": "왕복", "start_loc": "시작 위치",
         "adv_opt": "고급 설정", "opt_first": "첫 경유지", "opt_last": "마지막 경유지",
         "preset_sec": "📂 프리셋 관리", "load_btn": "불러오기", "del_preset": "삭제", "tab1_preset": "📂 프리셋에서 불러오기",
         "col_origin": "출발지", "col_dest": "도착지", "col_item": "화물명", "col_qty": "수량",
@@ -84,7 +86,9 @@ TRANS = {
         "name_label": "Name", "name_placeholder": "e.g. Run", "warn_no_task": "No tasks", "success_commit": "Added!",
         "grp_manage": "Contracts", "grp_del": "Del", "edit_name": "Edit Name", "edit_reward": "Edit Reward",
         "save_btn": "💾 Save as Preset", "clear_btn": "Reset", "calc_btn": "🔍 Search", "sim_header": "Results",
-        "select_route": "Select", "return_start": "Round Trip", "start_loc": "Start",
+        # 👇 [수정됨] Added number format {}
+        "select_route": "🚩 Select Route (Total {} routes found)",
+        "return_start": "Round Trip", "start_loc": "Start",
         "adv_opt": "Advanced", "opt_first": "First Stop", "opt_last": "Last Stop",
         "preset_sec": "📂 Presets", "load_btn": "Load", "del_preset": "Del", "tab1_preset": "📂 Load from Preset",
         "conflict_msg": "Conflict", "conflict_desc": "Name exists.",

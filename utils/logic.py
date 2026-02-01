@@ -17,11 +17,16 @@ def parse_option(formatted_str):
 def get_loc_label(code, loc_map): return loc_map.get(code, code)
 def get_item_label(code, item_map): return item_map.get(code, code)
 
+# 👇 [수정됨] 화물마다 'Mission' 이름표를 붙여줍니다!
 def flatten_groups(groups):
     flat = []
     for g in groups:
+        m_name = g.get('name', 'Unknown') # 계약 이름 가져오기
         for t in g.get('tasks', []):
-            t_safe = t.copy(); t_safe['Qty'] = safe_int(t.get('Qty', 0)); flat.append(t_safe)
+            t_safe = t.copy()
+            t_safe['Qty'] = safe_int(t.get('Qty', 0))
+            t_safe['Mission'] = m_name    # 꼬리표 부착
+            flat.append(t_safe)
     return flat
 
 def find_smart_paths(tasks, start, firsts, lasts, round_trip):

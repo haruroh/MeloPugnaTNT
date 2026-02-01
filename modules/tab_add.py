@@ -4,6 +4,31 @@ import copy
 from utils.logic import format_option, parse_option, safe_int
 
 def render_tab1(T, loc_codes, item_codes):
+    # 👇 [수정됨] 더욱 정밀한 CSS
+    # #calc-container 안에 있는 '버튼 그룹'만 가로 정렬을 강제합니다.
+    # 다른 곳(입력창 등)은 건드리지 않으므로 안전합니다.
+    st.markdown("""
+    <style>
+    /* 계산기 컨테이너 내부의 버튼 그룹 타겟팅 */
+    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) [data-testid="stHorizontalBlock"] {
+        flex-direction: row !important; /* 무조건 가로 유지 */
+        flex-wrap: nowrap !important;   /* 줄바꿈 금지 */
+    }
+    
+    /* 버튼들이 좁아져도 비율 유지 */
+    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) [data-testid="stHorizontalBlock"] [data-testid="column"] {
+        flex: 1 1 0px !important;
+        min-width: 0px !important;
+    }
+    
+    /* 모바일에서 버튼 내부 여백 줄임 */
+    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) button {
+        padding-left: 0.1rem !important;
+        padding-right: 0.1rem !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     with st.expander(T["tab1_preset"], expanded=False):
         if st.session_state.presets:
             p_opts = [f"{p.get('name','?')} ({len(p.get('tasks',[]))} tasks)" for p in st.session_state.presets]
@@ -14,6 +39,8 @@ def render_tab1(T, loc_codes, item_codes):
                 st.session_state.staging_tasks = loaded['tasks']
                 st.session_state.calc_value = str(loaded.get('reward', 0))
                 st.session_state.contract_name_input = loaded.get('name', "")
+                # [NEW] 프리셋 로드 시 시뮬레이션 결과 초기화
+                st.session_state.found_routes = []
                 
             st.button(T["load_btn"], key="t1_load_btn", on_click=load_preset)
         else: st.info("No presets available.")
@@ -47,7 +74,6 @@ def render_tab1(T, loc_codes, item_codes):
                     "Qty": st.column_config.NumberColumn(label=T["col_qty"], min_value=1)
                 }
             )
-            
             new_staging = []
             for row in edited_stg.to_dict('records'):
                 new_staging.append({"Origin": parse_option(row["Origin"]), "Dest": parse_option(row["Dest"]), "Item": parse_option(row["Item"]), "Qty": safe_int(row.get("Qty"))})
@@ -67,22 +93,26 @@ def render_tab1(T, loc_codes, item_codes):
         def add(n): st.session_state.calc_value = str(n) if st.session_state.calc_value=="0" else st.session_state.calc_value+str(n)
         def back(): st.session_state.calc_value = st.session_state.calc_value[:-1] if len(st.session_state.calc_value)>1 else "0"
         
-        k1, k2, k3 = st.columns(3)
-        with k1: 
-            if st.button("7", use_container_width=True): add(7); st.rerun()
-            if st.button("4", use_container_width=True): add(4); st.rerun()
-            if st.button("1", use_container_width=True): add(1); st.rerun()
-            if st.button("C", use_container_width=True): st.session_state.calc_value="0"; st.rerun()
-        with k2:
-            if st.button("8", use_container_width=True): add(8); st.rerun()
-            if st.button("5", use_container_width=True): add(5); st.rerun()
-            if st.button("2", use_container_width=True): add(2); st.rerun()
-            if st.button("0", use_container_width=True): add(0); st.rerun()
-        with k3:
-            if st.button("9", use_container_width=True): add(9); st.rerun()
-            if st.button("6", use_container_width=True): add(6); st.rerun()
-            if st.button("3", use_container_width=True): add(3); st.rerun()
-            if st.button("⌫", use_container_width=True): back(); st.rerun()
+        # 👇 [수정됨] 계산기 영역을 별도 컨테이너로 감싸고 마커를 그 안에 심습니다.
+        # 이렇게 하면 CSS가 이 박스 안쪽만 건드립니다.
+        with st.container():
+            st.markdown('<span id="calc-marker"></span>', unsafe_allow_html=True)
+            k1, k2, k3 = st.columns(3)
+            with k1: 
+                if st.button("7", use_container_width=True): add(7); st.rerun()
+                if st.button("4", use_container_width=True): add(4); st.rerun()
+                if st.button("1", use_container_width=True): add(1); st.rerun()
+                if st.button("C", use_container_width=True): st.session_state.calc_value="0"; st.rerun()
+            with k2:
+                if st.button("8", use_container_width=True): add(8); st.rerun()
+                if st.button("5", use_container_width=True): add(5); st.rerun()
+                if st.button("2", use_container_width=True): add(2); st.rerun()
+                if st.button("0", use_container_width=True): add(0); st.rerun()
+            with k3:
+                if st.button("9", use_container_width=True): add(9); st.rerun()
+                if st.button("6", use_container_width=True): add(6); st.rerun()
+                if st.button("3", use_container_width=True): add(3); st.rerun()
+                if st.button("⌫", use_container_width=True): back(); st.rerun()
 
         col_act1, col_act2 = st.columns(2)
         with col_act1:
@@ -104,5 +134,7 @@ def render_tab1(T, loc_codes, item_codes):
                 grp = {"name": fn, "reward": int(st.session_state.calc_value), "tasks": copy.deepcopy(st.session_state.staging_tasks)}
                 st.session_state.mission_groups.append(grp)
                 st.session_state.staging_tasks = []; st.session_state.calc_value = "0"; st.session_state.contract_name_input = ""
+                # [NEW] 미션 추가 시에도 시뮬레이션 결과 초기화 (새로운 미션이 생겼으니 다시 계산해야 함)
+                st.session_state.found_routes = []
             
             st.button(T["calc_commit"], type="primary", use_container_width=True, on_click=commit)
