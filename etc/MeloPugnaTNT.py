@@ -10,9 +10,9 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-# --- Page Config (Must be first) ---
+# --- Page Config ---
 st.set_page_config(
-    page_title="MeloPugna Trade & Transport v0.27.6", 
+    page_title="MeloPugna Trade & Transport v0.27.10", 
     layout="wide", 
     initial_sidebar_state="auto"
 )
@@ -43,14 +43,16 @@ def generate_item_code(n):
         q, r = divmod(n, l)
         return K_CORE[q-1] + K_CORE[r]
 
-# [System] Smart Loader (Master DB is Read-Only)
+# [System] Smart Loader (Handles both List and Dict formats)
 @st.cache_data
 def load_master_ship_db():
     if MASTER_DB_FILE.exists():
         try:
             with open(MASTER_DB_FILE, "r", encoding="utf-8-sig") as f:
                 data = json.load(f)
+                # Case 1: Dict { "ShipA": {...} }
                 if isinstance(data, dict): return data, f"✅ Loaded ({len(data)} ships)"
+                # Case 2: List [ {"ShipA": {...}}, ... ]
                 elif isinstance(data, list):
                     converted_db = {}
                     for item in data:
@@ -63,6 +65,7 @@ def load_master_ship_db():
 
 MASTER_SHIP_DB, DB_STATUS = load_master_ship_db()
 
+# Extract Manufacturers
 if MASTER_SHIP_DB:
     try:
         MANUFACTURERS = sorted(list(set([v.get("manufacturer", "Unknown") for v in MASTER_SHIP_DB.values()])))
@@ -76,20 +79,25 @@ VALID_CONTAINER_SIZES = [1, 2, 4, 8, 16, 24, 32]
 # [Data] Defaults
 PRESET_LOC_NAMES = ["Seraphim Station", "Orison", "Grim HEX", "Area18", "Baijini Point", "New Babbage", "Port Tressler", "Lorville", "Everus Harbor", "Pyrollis"]
 PRESET_ITEM_NAMES = ["Medical Supplies", "Distilled Spirits", "Stims", "Processed Food", "Scrap", "RMC", "Gold", "Laranite", "Agricium", "Waste"]
-
-DEFAULT_LOC_MAP = {generate_loc_code(i): (PRESET_LOC_NAMES[i] if i < len(PRESET_LOC_NAMES) else "") for i in range(26)}
-DEFAULT_ITEM_MAP = {generate_item_code(i): (PRESET_ITEM_NAMES[i] if i < len(PRESET_ITEM_NAMES) else "") for i in range(14)}
+# 장소와 아이템 기본값 개수
+DEFAULT_LENGTH = 10
+# 장소 및 아이템 기본 매핑
+DEFAULT_LOC_MAP = {generate_loc_code(i): (PRESET_LOC_NAMES[i] if i < len(PRESET_LOC_NAMES) else "") for i in range(DEFAULT_LENGTH)}
+DEFAULT_ITEM_MAP = {generate_item_code(i): (PRESET_ITEM_NAMES[i] if i < len(PRESET_ITEM_NAMES) else "") for i in range(DEFAULT_LENGTH)}
 
 DEFAULT_MISSIONS = [
-    {"name": "💊 Seraphim Medical Run", "reward": 45000, "tasks": [{"Origin": "B", "Dest": "A", "Item": "가", "Qty": 10}, {"Origin": "A", "Dest": "C", "Item": "나", "Qty": 5}]}
+    {"name": "💊 Seraphim Medical Run", "reward": 45000, "tasks": [{"Origin": "B", "Dest": "A", "Item": "가", "Qty": 10}, {"Origin": "A", "Dest": "C", "Item": "나", "Qty": 5}]} 
+    , {"name": "💊 Seraphim Stims Run", "reward": 54000, "tasks": [{"Origin": "A", "Dest": "C", "Item": "다", "Qty": 10}, {"Origin": "A", "Dest": "B", "Item": "다", "Qty": 5}, {"Origin": "A", "Dest": "D", "Item": "다", "Qty": 5}]}
 ]
 
 INITIAL_FLEET = [
-    {"id": "s_001", "man": "Drake Interplanetary", "model": "Cutlass Black", "capa": 46, "max_box": 16, "role": "Medium Freight", "size": "Medium", "pledge": "$110.00", "auec": "2,117,400 aUEC", "url": "https://www.spviewer.eu/performance?ship=drak_cutlass_black"},
+    {"id": "s_001", "man": "Drake ", "model": "Cutlass Black", "capa": 46, "max_box": 16, "role": "Light Freight / Medium Fighter", "size": "Medium", "pledge": "$110.00", "auec": "2,117,400 aUEC", "url": "https://www.spviewer.eu/performance?ship=drak_cutlass_black"},
+    {"id": "s_002", "man": "Crusader", "model": "Mercury Star Runner", "capa": 114, "max_box": 24, "role": "Medium Freight", "size": "Large", "pledge": "$260.00", "auec": "12,285,000 aUEC", "url": "https://www.spviewer.eu/performance?ship=crus_star_runner"},
+    {"id": "s_003", "man": "Argo", "model": "Raft", "capa": 192, "max_box": 32, "role": "Medium Freight", "size": "Large", "pledge": "$125.00", "auec": "3,543,750 aUEC", "url": "https://www.spviewer.eu/performance?ship=argo_raft"}
 ]
 
 RICH_DEFAULTS = {
-    "language": "KR", "current_ship_id": "s_001",
+    "language": "KR", "current_ship_id": "s_002",
     "loc_map": copy.deepcopy(DEFAULT_LOC_MAP), "item_map": copy.deepcopy(DEFAULT_ITEM_MAP),
     "mission_groups": copy.deepcopy(DEFAULT_MISSIONS), "presets": [],
     "my_fleet": copy.deepcopy(INITIAL_FLEET) # Isolated Fleet
@@ -114,7 +122,7 @@ def get_loc_label(code): return st.session_state.loc_map.get(code, code)
 def get_item_label(code): return st.session_state.item_map.get(code, code)
 
 # ==========================================
-# [Core Logic] Fleet Manager (Session State Ver.)
+# [Core Logic] Fleet Manager
 # ==========================================
 class FleetManager:
     def __init__(self):
@@ -224,10 +232,9 @@ ITEM_CODES = list(st.session_state.item_map.keys())
 TRANS = {
     "KR": {
         "app_title": "MeloPugna Trade & Transport", "app_subtitle": "스타시티즌 무역 및 화물 운송 최적화 솔루션",
-        "footer_plan": "기획", "footer_code": "코드 & 로직", "footer_ai_notice": "본 소프트웨어는 AI 기술과의 협업으로 제작되었습니다.",
         "sidebar_title": "⚙️ 설정 및 함선", "upload_label": "📂 설정 불러오기", "download_label": "💾 설정 저장하기",
         "lang_select": "언어", "ship_select": "운용 함선 선택", "map_expander": "🗺️ 이름 및 상품 매핑", 
-        "ship_add_expander": "🚀 함선 추가", "ship_search_label": "함선 모델명 검색", 
+        "ship_add_expander": "🚀 함선 추가 (마스터 DB 검색)", "ship_search_label": "함선 모델명 검색", 
         "ship_add_btn": "내 함선 목록에 추가", "ship_del_btn": "현재 함선 삭제",
         "hud_label": "현재 운용 함선",
         "hud_stat_capa": "최대 적재량", "hud_stat_role": "역할", "hud_stat_size": "크기",
@@ -250,7 +257,8 @@ TRANS = {
         "link_spviewer": "🔗 SPViewer 상세 정보", "add_loc_btn": "➕ 코드 추가", "add_item_btn": "➕ 코드 추가",
         "clear_loc_btn": "🗑️ 이름 지우기", "reset_loc_btn": "🔄 기본값 복원 (A~Z)", 
         "clear_item_btn": "🗑️ 이름 지우기", "reset_item_btn": "🔄 기본값 복원 (가~하)",
-        "limit_reached": "최대 개수(50개)에 도달했습니다."
+        "limit_reached": "최대 개수(50개)에 도달했습니다.",
+        "footer_plan": "기획", "footer_code": "코드 & 로직", "footer_ai_notice": "본 소프트웨어는 AI 기술과의 협업으로 제작되었습니다."
     },
     "EN": {
         "app_title": "MeloPugna Trade & Transport", "app_subtitle": "Star Citizen Trade & Cargo Hauling Optimization Solution",
@@ -349,30 +357,26 @@ def add_item_code_callback():
 
 def clear_loc_names_callback():
     for k in st.session_state.loc_map:
-        st.session_state.loc_map[k] = ""
-        if f"l_{k}" in st.session_state: st.session_state[f"l_{k}"] = ""
+        st.session_state.loc_map[k] = ""; st.session_state[f"l_{k}"] = ""
 
 def clear_item_names_callback():
     for k in st.session_state.item_map:
-        st.session_state.item_map[k] = ""
-        if f"i_{k}" in st.session_state: st.session_state[f"i_{k}"] = ""
+        st.session_state.item_map[k] = ""; st.session_state[f"i_{k}"] = ""
 
 def reset_loc_factory_callback():
     for k in list(st.session_state.loc_map.keys()):
         if f"l_{k}" in st.session_state: del st.session_state[f"l_{k}"]
     st.session_state.loc_map = copy.deepcopy(DEFAULT_LOC_MAP)
-    for k, v in st.session_state.loc_map.items():
-        if f"l_{k}" in st.session_state: st.session_state[f"l_{k}"] = v
+    for k, v in st.session_state.loc_map.items(): st.session_state[f"l_{k}"] = v
 
 def reset_item_factory_callback():
     for k in list(st.session_state.item_map.keys()):
         if f"i_{k}" in st.session_state: del st.session_state[f"i_{k}"]
     st.session_state.item_map = copy.deepcopy(DEFAULT_ITEM_MAP)
-    for k, v in st.session_state.item_map.items():
-        if f"i_{k}" in st.session_state: st.session_state[f"i_{k}"] = v
+    for k, v in st.session_state.item_map.items(): st.session_state[f"i_{k}"] = v
 
 # --- HEADER ---
-st.title(f"🚀 {T['app_title']} v0.27.6")
+st.title(f"🚀 {T['app_title']} v0.27.10")
 st.caption(T['app_subtitle'])
 
 # --- Sidebar ---
@@ -387,17 +391,36 @@ with st.sidebar:
         if st.session_state.processed_file_id != file_id:
             try:
                 d = json.load(uploaded)
-                if "loc_map" in d: st.session_state.loc_map = d["loc_map"]
-                if "item_map" in d: st.session_state.item_map = d["item_map"]
+                
+                # [FIXED] 데이터 로드 시 위젯 Key 동기화 (화면 갱신용)
+                if "loc_map" in d: 
+                    st.session_state.loc_map = d["loc_map"]
+                    # 위젯에도 강제 주입
+                    for k, v in d["loc_map"].items():
+                        st.session_state[f"l_{k}"] = v
+
+                if "item_map" in d: 
+                    st.session_state.item_map = d["item_map"]
+                    # 위젯에도 강제 주입
+                    for k, v in d["item_map"].items():
+                        st.session_state[f"i_{k}"] = v
+
                 if "mission_groups" in d: st.session_state.mission_groups = d["mission_groups"]
                 if "presets" in d: st.session_state.presets = d["presets"]
                 if "my_fleet" in d: fleet_mgr.update_fleet_from_upload(d["my_fleet"])
+                
                 if "current_ship_id" in d:
                     if fleet_mgr.get_ship_by_id(d["current_ship_id"]):
                         st.session_state.current_ship_id = d["current_ship_id"]
                     else:
                         all_s = fleet_mgr.get_all_options()
                         if all_s: st.session_state.current_ship_id = all_s[0]["id"]
+                
+                # [FIX v0.27.10] Clear Widget State to reflect loaded names/rewards
+                for k in list(st.session_state.keys()):
+                    if k.startswith("gn_") or k.startswith("gr_"):
+                        del st.session_state[k]
+
                 st.session_state.processed_file_id = file_id
                 st.toast("Loaded Successfully! Refreshing UI...", icon="✅")
                 st.rerun() 
@@ -415,11 +438,11 @@ with st.sidebar:
     }
     
     st.download_button(label=T["download_label"], data=json.dumps(ex_data, indent=4, ensure_ascii=False), file_name=save_name, mime="application/json", use_container_width=True)
+    
     st.divider()
     lang_opt = st.selectbox(T["lang_select"], ["KR", "EN"], index=["KR", "EN"].index(st.session_state.current_lang))
     
     my_ships = fleet_mgr.get_all_options()
-    
     s_opts = {s["id"]: f"{s['model']} [{s['man']}] ({s['capa']} SCU)" for s in my_ships}
     
     def update_ship(): pass 
@@ -427,10 +450,8 @@ with st.sidebar:
     if st.session_state.current_ship_id not in s_opts:
         if my_ships: st.session_state.current_ship_id = my_ships[0]["id"]
     
-    try: curr_idx = list(s_opts.keys()).index(st.session_state.current_ship_id)
-    except ValueError: curr_idx = 0
-
-    st.selectbox(T["ship_select"], options=list(s_opts.keys()), format_func=lambda x: s_opts[x], index=curr_idx, key="current_ship_id", on_change=update_ship)
+    # [FIX v0.27.10] Removed index=... to prevent conflict with key=...
+    st.selectbox(T["ship_select"], options=list(s_opts.keys()), format_func=lambda x: s_opts[x], key="current_ship_id", on_change=update_ship)
     
     if st.session_state.current_lang != lang_opt:
         st.session_state.current_lang = lang_opt; st.rerun()
@@ -545,7 +566,7 @@ st.markdown(f"""
 
 tab1, tab2, tab3 = st.tabs([T["tab_1"], T["tab_2"], T["tab_3"]])
 
-# Tab 1: Add
+# Tab 1: Add (Standard UI)
 with tab1:
     with st.expander(T["tab1_preset"], expanded=False):
         if st.session_state.presets:
@@ -569,8 +590,12 @@ with tab1:
         
         if st.session_state.staging_tasks:
             disp = [{"Origin": format_option(r['Origin'], st.session_state.loc_map), "Dest": format_option(r['Dest'], st.session_state.loc_map), "Item": format_option(r['Item'], st.session_state.item_map), "Qty": r['Qty']} for r in st.session_state.staging_tasks]
+            
             edited_stg = st.data_editor(
-                pd.DataFrame(disp), num_rows="dynamic", height=250, key="staging_editor",
+                pd.DataFrame(disp), 
+                num_rows="dynamic", 
+                height=250, 
+                key="staging_editor",
                 column_config={
                     "Origin": st.column_config.SelectboxColumn(label=T["col_origin"], options=[format_option(c, st.session_state.loc_map) for c in LOC_CODES], required=True),
                     "Dest": st.column_config.SelectboxColumn(label=T["col_dest"], options=[format_option(c, st.session_state.loc_map) for c in LOC_CODES], required=True),
@@ -578,11 +603,14 @@ with tab1:
                     "Qty": st.column_config.NumberColumn(label=T["col_qty"], min_value=1)
                 }
             )
+            
             new_staging = []
             for row in edited_stg.to_dict('records'):
                 new_staging.append({"Origin": parse_option(row["Origin"]), "Dest": parse_option(row["Dest"]), "Item": parse_option(row["Item"]), "Qty": safe_int(row.get("Qty"))})
+            
             if new_staging != st.session_state.staging_tasks:
                  st.session_state.staging_tasks = new_staging; st.rerun()
+            
             st.button("🗑️ " + T["calc_reset"], on_click=clear_staging_callback)
         else: st.info(T["stg_empty"])
 
@@ -619,7 +647,7 @@ with tab1:
         with col_act2:
             st.button(T["calc_commit"], type="primary", use_container_width=True, on_click=commit_contract_callback)
 
-# Tab 2: Manage
+# Tab 2: Manage (Standard UI)
 with tab2:
     with st.expander(T["preset_sec"]):
         if st.session_state.presets:
@@ -639,8 +667,11 @@ with tab2:
             c2.number_input(T["edit_reward"], value=grp['reward'], key=f"gr_{idx}", on_change=update_group_reward_callback, args=(idx, f"gr_{idx}"))
             
             disp = [{"Origin": format_option(r['Origin'], st.session_state.loc_map), "Dest": format_option(r['Dest'], st.session_state.loc_map), "Item": format_option(r['Item'], st.session_state.item_map), "Qty": r['Qty']} for r in grp['tasks']]
+            
             edited_grp_df = st.data_editor(
-                pd.DataFrame(disp), num_rows="dynamic", key=f"gedit_{idx}",
+                pd.DataFrame(disp), 
+                num_rows="dynamic", 
+                key=f"gedit_{idx}",
                 column_config={
                     "Origin": st.column_config.SelectboxColumn(label=T["col_origin"], options=[format_option(c, st.session_state.loc_map) for c in LOC_CODES], required=True),
                     "Dest": st.column_config.SelectboxColumn(label=T["col_dest"], options=[format_option(c, st.session_state.loc_map) for c in LOC_CODES], required=True),
@@ -648,6 +679,7 @@ with tab2:
                     "Qty": st.column_config.NumberColumn(label=T["col_qty"], min_value=1)
                 }
             )
+            
             updated_tasks = []
             for row in edited_grp_df.to_dict('records'):
                 updated_tasks.append({"Origin": parse_option(row["Origin"]), "Dest": parse_option(row["Dest"]), "Item": parse_option(row["Item"]), "Qty": safe_int(row.get("Qty"))})
@@ -725,7 +757,7 @@ with tab3:
                     if l_str: st.markdown(f":green[**🔺 {T['load']}**] {l_str}")
             
             st.markdown("---")
-            # [HOTFIX v0.27.6] Use correct variable 'capa_val'
+            # [FIX v0.27.10] Variable name fix
             if cur_max > capa_val: st.error(f"{T['overload']} {cur_max}/{capa_str}")
             else: st.success(f"{T['success']} Max: {cur_max}/{capa_str}")
 

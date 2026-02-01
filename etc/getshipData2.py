@@ -95,7 +95,7 @@ def parse_ships_from_html(html_source, source_type="Web"):
                 "name": ship_name,            # 함선명
                 "size": ship_size,            # Size
                 "cargo": cargo_capacity,      # Cargo
-                "role": role, 
+                "role": role,                 # Role 
                 "pledge": pledge_price,       # 서약 금액
                 "auec": auec_price,           # 인게임 가격
             }

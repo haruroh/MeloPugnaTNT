@@ -2,8 +2,8 @@ import json
 import os
 
 # 파일 경로 설정
-input_path = "master_ship.json"
-output_path = "master_ship_fixed.json" # 안전을 위해 새 파일로 저장
+input_path = "tmp/master_ship_20260131.json"
+output_path = "tmp/master_ship.json" # 안전을 위해 새 파일로 저장
 
 def fix_ship_data():
     if not os.path.exists(input_path):
