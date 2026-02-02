@@ -4,27 +4,17 @@ import copy
 from utils.logic import format_option, parse_option, safe_int
 
 def render_tab1(T, loc_codes, item_codes):
-    # 👇 [수정됨] 더욱 정밀한 CSS
-    # #calc-container 안에 있는 '버튼 그룹'만 가로 정렬을 강제합니다.
-    # 다른 곳(입력창 등)은 건드리지 않으므로 안전합니다.
+    # CSS 유지
     st.markdown("""
     <style>
-    /* 계산기 컨테이너 내부의 버튼 그룹 타겟팅 */
-    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) [data-testid="stHorizontalBlock"] {
-        flex-direction: row !important; /* 무조건 가로 유지 */
-        flex-wrap: nowrap !important;   /* 줄바꿈 금지 */
+    div[data-testid="stVerticalBlock"]:has(span#calc-marker) > div[data-testid="stHorizontalBlock"] {
+        flex-direction: row !important; flex-wrap: nowrap !important; gap: 0.5rem !important;
     }
-    
-    /* 버튼들이 좁아져도 비율 유지 */
-    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) [data-testid="stHorizontalBlock"] [data-testid="column"] {
-        flex: 1 1 0px !important;
-        min-width: 0px !important;
+    div[data-testid="stVerticalBlock"]:has(span#calc-marker) > div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: auto !important; flex: 1 1 0px !important; min-width: 0px !important;
     }
-    
-    /* 모바일에서 버튼 내부 여백 줄임 */
-    [data-testid="stVerticalBlock"]:has(> div > #calc-marker) button {
-        padding-left: 0.1rem !important;
-        padding-right: 0.1rem !important;
+    div[data-testid="stVerticalBlock"]:has(span#calc-marker) button {
+        width: 100% !important; padding: 0.25rem !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -37,9 +27,13 @@ def render_tab1(T, loc_codes, item_codes):
             def load_preset():
                 loaded = copy.deepcopy(st.session_state.presets[sel_p_idx])
                 st.session_state.staging_tasks = loaded['tasks']
-                st.session_state.calc_value = str(loaded.get('reward', 0))
+                
+                # 값 동기화
+                reward_val = loaded.get('reward', 0)
+                st.session_state.calc_value = str(reward_val)
+                st.session_state.manual_reward_input = int(reward_val)
+                
                 st.session_state.contract_name_input = loaded.get('name', "")
-                # [NEW] 프리셋 로드 시 시뮬레이션 결과 초기화
                 st.session_state.found_routes = []
                 
             st.button(T["load_btn"], key="t1_load_btn", on_click=load_preset)
@@ -88,31 +82,72 @@ def render_tab1(T, loc_codes, item_codes):
     with c2:
         st.subheader(T["calc_header"])
         st.text_input(T["name_label"], placeholder=T["name_placeholder"], key="contract_name_input")
-        st.markdown(f"### {int(st.session_state.calc_value):,} aUEC")
         
-        def add(n): st.session_state.calc_value = str(n) if st.session_state.calc_value=="0" else st.session_state.calc_value+str(n)
-        def back(): st.session_state.calc_value = st.session_state.calc_value[:-1] if len(st.session_state.calc_value)>1 else "0"
+        # 👇 [수정됨 1] 입력창이 비었을 때(None) "0"으로 처리하는 안전장치 추가
+        def sync_input():
+            val = st.session_state.manual_reward_input
+            if val is None:
+                st.session_state.calc_value = "0"
+            else:
+                st.session_state.calc_value = str(val)
+
+        # 👇 [수정됨 2] 계산기 버튼용 콜백 (State -> Input)
+        def update_both(new_val_str):
+            st.session_state.calc_value = new_val_str
+            # 문자열이 비어있거나 이상하면 0으로 처리
+            st.session_state.manual_reward_input = int(safe_int(new_val_str))
+
+        def cb_add(n):
+            current = st.session_state.calc_value
+            # current가 None 문자열이면 "0"으로 취급
+            if current == "None" or current is None: current = "0"
+            
+            new_val = str(n) if current == "0" else current + str(n)
+            update_both(new_val)
+
+        def cb_back():
+            current = st.session_state.calc_value
+            if current == "None" or current is None: current = "0"
+            
+            new_val = current[:-1] if len(current) > 1 else "0"
+            update_both(new_val)
         
-        # 👇 [수정됨] 계산기 영역을 별도 컨테이너로 감싸고 마커를 그 안에 심습니다.
-        # 이렇게 하면 CSS가 이 박스 안쪽만 건드립니다.
+        def cb_clear():
+            update_both("0")
+
+        # 초기값 안전 장치
+        if "manual_reward_input" not in st.session_state:
+            st.session_state.manual_reward_input = int(safe_int(st.session_state.calc_value))
+
+        # 숫자 입력창
+        st.number_input(
+            label="Reward (aUEC)", 
+            value=None, 
+            min_value=0, 
+            step=1000, 
+            key="manual_reward_input", 
+            on_change=sync_input
+        )
+        
+        # 계산기 버튼 영역
         with st.container():
             st.markdown('<span id="calc-marker"></span>', unsafe_allow_html=True)
             k1, k2, k3 = st.columns(3)
             with k1: 
-                if st.button("7", use_container_width=True): add(7); st.rerun()
-                if st.button("4", use_container_width=True): add(4); st.rerun()
-                if st.button("1", use_container_width=True): add(1); st.rerun()
-                if st.button("C", use_container_width=True): st.session_state.calc_value="0"; st.rerun()
+                st.button("7", use_container_width=True, on_click=cb_add, args=(7,))
+                st.button("4", use_container_width=True, on_click=cb_add, args=(4,))
+                st.button("1", use_container_width=True, on_click=cb_add, args=(1,))
+                st.button("C", use_container_width=True, on_click=cb_clear)
             with k2:
-                if st.button("8", use_container_width=True): add(8); st.rerun()
-                if st.button("5", use_container_width=True): add(5); st.rerun()
-                if st.button("2", use_container_width=True): add(2); st.rerun()
-                if st.button("0", use_container_width=True): add(0); st.rerun()
+                st.button("8", use_container_width=True, on_click=cb_add, args=(8,))
+                st.button("5", use_container_width=True, on_click=cb_add, args=(5,))
+                st.button("2", use_container_width=True, on_click=cb_add, args=(2,))
+                st.button("0", use_container_width=True, on_click=cb_add, args=(0,))
             with k3:
-                if st.button("9", use_container_width=True): add(9); st.rerun()
-                if st.button("6", use_container_width=True): add(6); st.rerun()
-                if st.button("3", use_container_width=True): add(3); st.rerun()
-                if st.button("⌫", use_container_width=True): back(); st.rerun()
+                st.button("9", use_container_width=True, on_click=cb_add, args=(9,))
+                st.button("6", use_container_width=True, on_click=cb_add, args=(6,))
+                st.button("3", use_container_width=True, on_click=cb_add, args=(3,))
+                st.button("⌫", use_container_width=True, on_click=cb_back)
 
         col_act1, col_act2 = st.columns(2)
         with col_act1:
@@ -120,7 +155,8 @@ def render_tab1(T, loc_codes, item_codes):
                 if not st.session_state.staging_tasks: return
                 c_name = st.session_state.contract_name_input
                 fn = c_name if c_name.strip() else f"Contract #{len(st.session_state.mission_groups)+1}"
-                new_p = {"name": fn, "reward": int(st.session_state.calc_value), "tasks": copy.deepcopy(st.session_state.staging_tasks)}
+                final_reward = safe_int(st.session_state.manual_reward_input) # 안전하게 변환
+                new_p = {"name": fn, "reward": final_reward, "tasks": copy.deepcopy(st.session_state.staging_tasks)}
                 st.session_state.presets.append(new_p)
             
             if st.button(T["save_btn"], use_container_width=True):
@@ -131,10 +167,14 @@ def render_tab1(T, loc_codes, item_codes):
                 if not st.session_state.staging_tasks: return 
                 c_name = st.session_state.contract_name_input
                 fn = c_name if c_name.strip() else f"Contract #{len(st.session_state.mission_groups)+1}"
-                grp = {"name": fn, "reward": int(st.session_state.calc_value), "tasks": copy.deepcopy(st.session_state.staging_tasks)}
+                final_reward = safe_int(st.session_state.manual_reward_input) # 안전하게 변환
+                grp = {"name": fn, "reward": final_reward, "tasks": copy.deepcopy(st.session_state.staging_tasks)}
                 st.session_state.mission_groups.append(grp)
-                st.session_state.staging_tasks = []; st.session_state.calc_value = "0"; st.session_state.contract_name_input = ""
-                # [NEW] 미션 추가 시에도 시뮬레이션 결과 초기화 (새로운 미션이 생겼으니 다시 계산해야 함)
+                
+                # 초기화
+                st.session_state.staging_tasks = []
+                update_both("0") 
+                st.session_state.contract_name_input = ""
                 st.session_state.found_routes = []
             
             st.button(T["calc_commit"], type="primary", use_container_width=True, on_click=commit)
