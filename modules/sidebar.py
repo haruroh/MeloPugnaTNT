@@ -69,7 +69,7 @@ def render_sidebar(T, fleet_mgr, master_db, db_status, loc_codes, item_codes):
                     st.rerun()
 
     st.sidebar.divider()
-    save_name = st.sidebar.text_input(T["save_filename_label"], value=f"haru_config_{datetime.now().strftime('%Y%m%d')}.json")
+    save_name = st.sidebar.text_input(T["save_filename_label"], value=f"melo_config_{datetime.now().strftime('%Y%m%d')}.json")
     st.sidebar.caption(T["save_path_info"])
     
     ex_data = {
